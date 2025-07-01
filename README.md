@@ -10,3 +10,5 @@ This will:
 - Triggers the translator-queue.py which cleans up some common OCR mistakes and queues a translation job
 - When complete, appends the translated text to the "Content" field of the document.
 - If the language is detected as English, translation will be skipped, and a note appended instead.
+
+This approach is heavily inspired by an [implementation](https://github.com/paperless-ngx/paperless-ngx/discussions/269#discussioncomment-12303929) by [kavishdahekar](https://github.com/kavishdahekar).

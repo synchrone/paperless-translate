@@ -91,24 +91,62 @@ def clean_ocr_text(text):
     
     return cleaned.strip()
 
+def remove_existing_translation(text):
+    """Remove existing translation block from text if present"""
+    # Define translation markers
+    start_marker = ">>>>>>> TRANSLATION START <<<<<<<" 
+    end_marker = ">>>>>>> TRANSLATION END <<<<<<<"
+    
+    # Check if translation block exists
+    start_idx = text.find(start_marker)
+    if start_idx == -1:
+        return text  # No existing translation
+    
+    end_idx = text.find(end_marker)
+    if end_idx == -1:
+        # Malformed - start marker without end marker, remove from start marker to end
+        return text[:start_idx].rstrip()
+    
+    # Remove the entire translation block including markers
+    before_translation = text[:start_idx].rstrip()
+    after_translation = text[end_idx + len(end_marker):].lstrip()
+    
+    if after_translation:
+        return before_translation + "\n\n" + after_translation
+    else:
+        return before_translation
+
+def get_original_text_for_translation(text):
+    """Extract original text (without existing translation) for language detection and translation"""
+    # Remove any existing translation block first
+    original_text = remove_existing_translation(text)
+    return original_text
+
 def process_translation_job(doc_id):
     """Process a single translation job"""
     print(f"[translator] Processing translation for document {doc_id}", flush=True)
     try:
-        # Fetch OCR text
+        # Fetch document content
         r = requests.get(
             f"{API_URL}/api/documents/{doc_id}/",
             headers={"Authorization": f"Token {TOKEN}"}
         )
         r.raise_for_status()
-        text = r.json().get("content", "")
+        full_content = r.json().get("content", "")
         
-        if not text.strip():
+        if not full_content.strip():
             print(f"[translator] No content found for document {doc_id}", flush=True)
+            return
+        
+        # Extract original text (without any existing translation)
+        original_text = get_original_text_for_translation(full_content)
+        
+        if not original_text.strip():
+            print(f"[translator] No original text found for document {doc_id}", flush=True)
             return
             
         # Clean up common OCR errors before translation
-        cleaned_text = clean_ocr_text(text)
+        cleaned_text = clean_ocr_text(original_text)
         
         # Detect language - skip translation if already English
         try:
@@ -137,8 +175,18 @@ def process_translation_job(doc_id):
         resp.raise_for_status()
         translation = resp.json().get("translatedText", "")
         
-        # Patch back to Paperless
-        new_content = f"{text}\n\n-----------------\n\n{translation}"
+        if not translation.strip():
+            print(f"[translator] Empty translation received for document {doc_id}", flush=True)
+            processing_stats["failed"] += 1
+            return
+        
+        # Create new content with translation markers
+        start_marker = ">>>>>>> TRANSLATION START <<<<<<<" 
+        end_marker = ">>>>>>> TRANSLATION END <<<<<<<"
+        
+        new_content = f"{original_text}\n\n{start_marker}\n{translation}\n{end_marker}"
+        
+        # Update document content
         patch = requests.patch(
             f"{API_URL}/api/documents/{doc_id}/",
             headers={"Authorization": f"Token {TOKEN}"},

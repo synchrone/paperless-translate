@@ -6,3 +6,4 @@ docker-compose.env
 /data
 /export
 /media
+.env

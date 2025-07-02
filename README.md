@@ -16,3 +16,23 @@ This will:
 - If the language is detected as English, translation will be skipped, and a note appended instead.
 
 This approach is heavily inspired by an [implementation](https://github.com/paperless-ngx/paperless-ngx/discussions/269#discussioncomment-12303929) by [kavishdahekar](https://github.com/kavishdahekar).
+
+## Manual Translation & Queue Management
+
+You can manually trigger a translation for a document or check the status of the translation queue using the following methods:
+
+### Trigger a Translation
+
+To manually trigger a translation for a specific document, send a POST request to the `/translate` endpoint with the document's ID. Replace `YOUR_DOCUMENT_ID` with the actual ID of the document you want to translate.
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"document_id": YOUR_DOCUMENT_ID}' http://localhost:5000/translate
+```
+
+### Check Queue Status
+
+To check the current status of the translation queue, including total, completed, and failed jobs, send a GET request to the `/status` endpoint:
+
+```bash
+curl http://localhost:5000/status
+```

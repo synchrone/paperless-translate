@@ -13,7 +13,7 @@ from langdetect.lang_detect_exception import LangDetectException
 app = Flask(__name__)
 
 API_URL = "http://webserver:8000"
-TOKEN   = "[insert token here]"
+TOKEN   = os.getenv("PAPERLESS_API_TOKEN")
 LIBRETRANSLATE_URL = "http://libretranslate:5000"
 
 # Redis connection for job queue

@@ -2,8 +2,12 @@ This configuration will automatically translate your documents using LibreTransl
 
 Setup:
 1. Generate an API key in paperless-ngx under My Profile.
-2. Edit `translator-queue.yml` to update with the appropriate token
-3. Also in `translator-queue.yml`, update the `"source": "de",` line to the appropriate source language.
+2. Create a `.env` file in the root of the project.
+3. Add the following line to the `.env` file, replacing `your_token_here` with the API key you generated:
+   ```
+   PAPERLESS_API_TOKEN=your_token_here
+   ```
+4. Also in `translator-queue.yml`, update the `"source": "de",` line to the appropriate source language.
 
 This will:
 - When a new document is consumed, run the post_consume_script.sh which

@@ -102,6 +102,7 @@ services:
     command: >
       sh -c "pip install flask requests redis langdetect &&
              python translator-queue.py"
+    env_file: .env
     environment:
       - FLASK_ENV=production
 

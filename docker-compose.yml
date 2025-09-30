@@ -91,7 +91,6 @@ services:
     image: python:3.12-slim
     restart: unless-stopped
     depends_on:
-      - broker
       - webserver
       - libretranslate
     ports:
@@ -100,11 +99,13 @@ services:
       - ./scripts:/app
     working_dir: /app
     command: >
-      sh -c "pip install flask requests redis langdetect &&
+      sh -c "pip install flask requests langdetect pymupdf &&
              python translator-queue.py"
     env_file: .env
     environment:
       - FLASK_ENV=production
+      - LANG_SOURCE=de
+      - LANG_TARGET=en
 
   libretranslate:
     image: libretranslate/libretranslate:latest
